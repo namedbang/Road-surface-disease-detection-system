@@ -224,7 +224,7 @@ def main():
             # Tracking view 跟踪视图
             track_view_generator.generate_view(objects, cam_w_pose, image_track_ocv, objects.is_tracked)#跟踪视图更新
 
-            cv2.imshow("ZED | 2D View and Birds View", global_image)
+            cv2.imshow("ZED | 2D View", global_image)
             key = cv2.waitKey(10)
             if key == 27:
                 exit_signal = True
