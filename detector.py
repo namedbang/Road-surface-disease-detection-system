@@ -137,7 +137,7 @@ def main():
     if opt.svo is not None:
         input_type.set_from_svo_file(opt.svo)
 
-    # Create a InitParameters object and set configuration parameters
+    # Create a InitParameters object and set configuration parameters 创建 InitParameters 对象并设置配置参数
     init_params = sl.InitParameters(input_t=input_type, svo_real_time_mode=True)
     init_params.coordinate_units = sl.UNIT.METER
     init_params.depth_mode = sl.DEPTH_MODE.ULTRA  # QUALITY
