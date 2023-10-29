@@ -206,10 +206,10 @@ def main():
 
             # Wait for detections #等待检测结果
             lock.acquire()
-            zed.ingest_custom_box_objects(detections)# -- Ingest detections-- 摄取检测
+            zed.ingest_custom_box_objects(detections)# -- Ingest detections-- 摄取yolov5检测结果 将yolov5检测结果输入给zed相机内部检测模块
             lock.release()
-            zed.retrieve_objects(objects, obj_runtime_param)
-            # -- Display
+            zed.retrieve_objects(objects, obj_runtime_param)# 检索检测对象
+            # -- Display 显示数据模块
             # Retrieve display data 检索显示数据
             zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA, sl.MEM.CPU, point_cloud_res)
             point_cloud.copy_to(point_cloud_render)
