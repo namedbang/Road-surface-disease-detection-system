@@ -125,7 +125,7 @@ def torch_thread(weights, img_size, conf_thres=0.2, iou_thres=0.45):
 
 def main():
     global image_net, exit_signal, run_signal, detections
-
+    #检测线程（跑识别的）
     capture_thread = Thread(target=torch_thread, kwargs={'weights': opt.weights, 'img_size': opt.img_size, "conf_thres": opt.conf_thres})
     capture_thread.start()
 
@@ -183,11 +183,11 @@ def main():
     image_scale = [display_resolution.width / camera_res.width, display_resolution.height / camera_res.height]
     image_left_ocv = np.full((display_resolution.height, display_resolution.width, 4), [245, 239, 239, 255], np.uint8)
     # Utilities for tracks view
-    camera_config = camera_infos.camera_configuration
-    tracks_resolution = sl.Resolution(400, display_resolution.height)
-    track_view_generator = cv_viewer.TrackingViewer(tracks_resolution, camera_config.fps, init_params.depth_maximum_distance)
-    track_view_generator.set_camera_calibration(camera_config.calibration_parameters)
-    image_track_ocv = np.zeros((tracks_resolution.height, tracks_resolution.width, 4), np.uint8)
+    # camera_config = camera_infos.camera_configuration
+    # tracks_resolution = sl.Resolution(400, display_resolution.height)
+    # track_view_generator = cv_viewer.TrackingViewer(tracks_resolution, camera_config.fps, init_params.depth_maximum_distance)
+    # track_view_generator.set_camera_calibration(camera_config.calibration_parameters)
+    # image_track_ocv = np.zeros((tracks_resolution.height, tracks_resolution.width, 4), np.uint8)
     # Camera pose
     cam_w_pose = sl.Pose()
 
@@ -200,7 +200,7 @@ def main():
             lock.release()
             run_signal = True
 
-            # -- Detection running on the other thread
+            # -- Detection running on the other thread #等待线程释放信号量
             while run_signal:
                 sleep(0.001)
 
@@ -220,9 +220,10 @@ def main():
             # 2D rendering 2D画面更新
             np.copyto(image_left_ocv, image_left.get_data())
             cv_viewer.render_2D(image_left_ocv, image_scale, objects, obj_param.enable_tracking)#画框
-            global_image = cv2.hconcat([image_left_ocv, image_track_ocv])#将跟踪试图和检测图像拼接
+            # global_image = cv2.hconcat([image_left_ocv, image_track_ocv])#将跟踪试图和检测图像拼接
+            global_image = image_left_ocv
             # Tracking view 跟踪视图
-            track_view_generator.generate_view(objects, cam_w_pose, image_track_ocv, objects.is_tracked)#跟踪视图更新
+            # track_view_generator.generate_view(objects, cam_w_pose, image_track_ocv, objects.is_tracked)#跟踪视图更新
 
             cv2.imshow("ZED | 2D View", global_image)
             key = cv2.waitKey(10)
