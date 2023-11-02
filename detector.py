@@ -72,10 +72,10 @@ def detections_to_custom_box(detections, im, im0):
     for i, det in enumerate(detections):
         if len(det):
             det[:, :4] = scale_boxes(im.shape[2:], det[:, :4], im0.shape).round()
-            gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
+            gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh 归一化增益whwh
 
             for *xyxy, conf, cls in reversed(det):
-                xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
+                xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh 归一化xywh
 
                 # Creating ingestable objects for the ZED SDK
                 obj = sl.CustomBoxObjectData()
@@ -92,7 +92,7 @@ def torch_thread(weights, img_size, conf_thres=0.2, iou_thres=0.45):
 
     print("Intializing Network...")
 
-    device = select_device()
+    device = select_device('0')
     half = device.type != 'cpu'  # half precision only supported on CUDA
     imgsz = img_size
 
@@ -116,7 +116,7 @@ def torch_thread(weights, img_size, conf_thres=0.2, iou_thres=0.45):
             pred = model(img)[0]
             det = non_max_suppression(pred, conf_thres, iou_thres)
 
-            # ZED CustomBox format (with inverse letterboxing tf applied)
+            # ZED CustomBox format (with inverse letterboxing tf applied) #ZED CustomBox格式（应用反向信箱tf）
             detections = detections_to_custom_box(det, img, image_net)
             lock.release()
             run_signal = False
@@ -237,6 +237,9 @@ def main():
     zed.close()
 
 if __name__ == '__main__':
+    print(torch.__version__)
+    print(torch.cuda.is_available())
+    print(torch.cuda.device_count())
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str, default='/yolov5/yolov5s.pt', help='model.pt path(s)')
     parser.add_argument('--svo', type=str, default=None, help='optional svo file')
