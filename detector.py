@@ -21,10 +21,24 @@ from time import sleep
 import ogl_viewer.viewer as gl
 import cv_viewer.tracking_viewer as cv_viewer
 
+# import time
+# import serial
+
 lock = Lock()
 run_signal = False
 exit_signal = False
 
+def UART_Init():
+    serial_port = serial.Serial(
+    port="/dev/ttyTCU0",   #这里注意一下这个端口号
+    baudrate=115200,
+    bytesize=serial.EIGHTBITS,
+    parity=serial.PARITY_NONE,
+    stopbits=serial.STOPBITS_ONE,
+    )
+    time.sleep(1)
+    serial_port.write("NVIDIA Jetson UART_Init OK\r\n".encode())
+    return serial_port
 
 def img_preprocess(img, device, half, net_size):
     net_image, ratio, pad = letterbox(img[:, :, :3], net_size, auto=False)
@@ -172,11 +186,11 @@ def main():
     camera_infos = zed.get_camera_information()
     camera_res = camera_infos.camera_configuration.resolution
     # Create OpenGL viewer #3D渲染初始化OpenGL
-    viewer = gl.GLViewer()
-    point_cloud_res = sl.Resolution(min(camera_res.width, 720), min(camera_res.height, 404))
-    point_cloud_render = sl.Mat()
-    viewer.init(camera_infos.camera_model, point_cloud_res, obj_param.enable_tracking)
-    point_cloud = sl.Mat(point_cloud_res.width, point_cloud_res.height, sl.MAT_TYPE.F32_C4, sl.MEM.CPU)
+    # viewer = gl.GLViewer()
+    # point_cloud_res = sl.Resolution(min(camera_res.width, 720), min(camera_res.height, 404))
+    # point_cloud_render = sl.Mat()
+    # viewer.init(camera_infos.camera_model, point_cloud_res, obj_param.enable_tracking)
+    # point_cloud = sl.Mat(point_cloud_res.width, point_cloud_res.height, sl.MAT_TYPE.F32_C4, sl.MEM.CPU)
     image_left = sl.Mat()
     # Utilities for 2D display
     display_resolution = sl.Resolution(min(camera_res.width, 1280), min(camera_res.height, 720))
@@ -191,7 +205,7 @@ def main():
     # Camera pose
     cam_w_pose = sl.Pose()
 
-    while viewer.is_available() and not exit_signal:
+    while not exit_signal:
         if zed.grab(runtime_params) == sl.ERROR_CODE.SUCCESS:
             # -- Get the image
             lock.acquire()
@@ -211,12 +225,12 @@ def main():
             zed.retrieve_objects(objects, obj_runtime_param)# 检索检测对象
             # -- Display 显示数据模块
             # Retrieve display data 检索显示数据
-            zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA, sl.MEM.CPU, point_cloud_res)
-            point_cloud.copy_to(point_cloud_render)
+            # zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA, sl.MEM.CPU, point_cloud_res)
+            # point_cloud.copy_to(point_cloud_render)
             zed.retrieve_image(image_left, sl.VIEW.LEFT, sl.MEM.CPU, display_resolution)
-            zed.get_position(cam_w_pose, sl.REFERENCE_FRAME.WORLD)
+            # zed.get_position(cam_w_pose, sl.REFERENCE_FRAME.WORLD)
             # 3D rendering 3D画面的渲染更新
-            viewer.updateData(point_cloud_render, objects)
+            # viewer.updateData(point_cloud_render, objects)
             # 2D rendering 2D画面更新
             np.copyto(image_left_ocv, image_left.get_data())
             cv_viewer.render_2D(image_left_ocv, image_scale, objects, obj_param.enable_tracking)#画框
@@ -224,7 +238,10 @@ def main():
             global_image = image_left_ocv
             # Tracking view 跟踪视图
             # track_view_generator.generate_view(objects, cam_w_pose, image_track_ocv, objects.is_tracked)#跟踪视图更新
-
+            # height, width, channels = global_image.shape
+            # print("图像宽度:", width)
+            # print("图像高度:", height)
+            # print("通道数:", channels)
             cv2.imshow("ZED | 2D View", global_image)
             key = cv2.waitKey(10)
             if key == 27:
@@ -235,6 +252,8 @@ def main():
     viewer.exit()
     exit_signal = True
     zed.close()
+
+# port = UART_Init()
 
 if __name__ == '__main__':
     print(torch.__version__)

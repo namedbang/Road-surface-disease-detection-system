@@ -6,7 +6,10 @@ import pyzed.sl as sl
 import math
 from collections import deque
 
-
+# import serial
+# import sys
+# sys.path.insert(0, '../')
+# from detector import port
 # ----------------------------------------------------------------------
 #       2D LEFT VIEW
 # ----------------------------------------------------------------------
@@ -71,7 +74,16 @@ def render_2D(left_display, img_scale, objects, is_tracking_on):
                 text = str(round(abs(obj.position[2]), 2)) + "MI"
                 text_position = (int(position_image[0] - 20), int(position_image[1]))
                 cv2.putText(left_display, text, text_position, cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.5, text_color, 1)
-
+            #打印检测到的物体数目
+            print(len(objects.object_list))
+            #计算转动角度
+            # if obj.raw_label == 0:
+            #     x = (int(top_left_corner[0])+int(bottom_right_corner[0]))/2-(1280/2)
+            #     y = -(int(top_left_corner[1])+int(bottom_right_corner[1]))/2+(720/2)
+            #     print(int(x).to_bytes(4,byteorder='little'))
+            # classOpj = int(obj.raw_label)
+            # port.write(classOpj.to_bytes(1,byteorder='big'))
+            #port.write(int(len(objects.object_list)).to_bytes(1,))
     # Here, overlay is as the left image, but with opaque masks on each detected objects
     cv2.addWeighted(left_display, 0.7, overlay, 0.3, 0.0, left_display)
 
